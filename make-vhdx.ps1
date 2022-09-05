@@ -15,14 +15,15 @@ function PickFolder {
 
     # Initialize pop-up
     $picker = New-Object System.Windows.Forms.FolderBrowserDialog
-    # Powershell 7
-    if ($path_picker.InitialDirectory) {
-        $path_picker.InitialDirectory = "C:\"
-    }
-    # Powershell 5
-    if ($path_picker.RootFolder) {
-        $path_picker.RootFolder = "MyComputer"
-        $path_picker.SelectedPath = "C:\"
+    $ps_version = $PSVersionTable.PSVersion | Select-Object -ExpandProperty Major
+    # Powershell versioning shim
+    if ($ps_version -gt "5") {
+        $picker.InitialDirectory = "C:\"
+    } else {
+        $picker.RootFolder = "MyComputer"
+        if ($Object -eq "System.Windows.Forms.FolderBrowserDialog") {
+            $picker.SelectedPath = "C:\"
+        }
     }
 
     # Call and save choice
