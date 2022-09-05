@@ -8,6 +8,12 @@ of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Publ
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 #>
 
+$session = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (!$session.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host -ForegroundColor Red "This script requires administrative privileges.`nExiting."
+    return
+}
+
 # GUI to choose disk path
 function PickFolder {
     # Access built-in library
@@ -87,7 +93,7 @@ function PickMachine {
 $verbose_color = "White"
 $success_color = "Green"
 
-Write-Host "`n`n    Create several virtual disks for use with Hyper-V and optionally add them to an existing machine.`n    The guest OS can be running while executing this script.`n    The executing user needs to have administrative privileges.`n    Defaults can be accepted by pressing [ENTER]`n    Copyright 2022, Marian Arlt, All rights reserved`n`n"
+Write-Host "`n`n    Create several virtual disks for use with Hyper-V and optionally add them to an existing machine.`n    Guest OS' that get disks attached to can be running while executing this script.`n    Defaults can be accepted by pressing [ENTER]`n    Copyright 2022, Marian Arlt, All rights reserved`n`n"
 
 # Prompt for disk names
 $disks_basename = Read-Host "Please enter a name for your disks. For example 'vm-raid5-disk'.`nA running number in the format of '-n' will get appended automatically (Default: 'Disk')"
