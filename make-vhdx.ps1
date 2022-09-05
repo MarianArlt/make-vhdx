@@ -125,16 +125,12 @@ if ($disks_equal -like "N*") {
 # Prompt for path
 $add_to_vm = Read-Host "`nShould the created disks be attached to an existing virtual machine? (Default: No)"
 if ($add_to_vm -like "Y*") {
-
     $vm_name, $disks_path = PickMachine
-
 } else {
-
     $disks_path = Read-Host "Press [ENTER] to select a folder or write a path to save the new disks to"
     if(!$disks_path) {
         $disks_path = PickFolder
     }
-
 }
 Write-Host -NoNewline -ForegroundColor $verbose_color "> The disks will be created in $disks_path`n"
 
