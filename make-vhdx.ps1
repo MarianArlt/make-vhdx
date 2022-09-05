@@ -83,39 +83,43 @@ function PickMachine {
     }
 }
 
+# Define colors
+$verbose_color = "White"
+$success_color = "Green"
+
 Write-Host "`n`n    Create several virtual disks for use with Hyper-V and optionally add them to an existing machine.`n    The guest OS can be running while executing this script.`n    The executing user needs to have administrative privileges.`n    Defaults can be accepted by pressing [ENTER]`n    Copyright 2022, Marian Arlt, All rights reserved`n`n"
 
 # Prompt for disk names
 $disks_basename = Read-Host "Please enter a name for your disks. For example 'vm-raid5-disk'.`nA running number in the format of '-n' will get appended automatically (Default: 'Disk')"
 if (!$disks_basename) {
-    $disks_basename = "disk"
+    $disks_basename = "Disk"
 }
-Write-Host "> The first disk will be called: $disks_basename-1"
+Write-Host -ForegroundColor $verbose_color "> The first disk will be called: $disks_basename-1"
 
 # Prompt for quantity
 $disks_total = Read-Host "`nHow many disks do you want to create? (Default: 2)"
 if (!$disks_total) {
     $disks_total = 2
 }
-Write-Host "> $disks_total disks will be created."
+Write-Host -ForegroundColor $verbose_color "> $disks_total disks will be created."
 
 # Prompt for size
 $disks_equal = Read-Host "`nShould these disks all be of the same size? (Default: Yes)"
 if ($disks_equal -like "N*") {
     $unequal_size = @()
     for ($i = 1; $i -le $disks_total; $i++) {
-        $unequal_size_current = Read-Host "`nEnter size for $disks_basename-$i (Default: 2GB)"
+        $unequal_size_current = Read-Host "Enter size for $disks_basename-$i (Default: 2GB)"
         if (!$unequal_size_current) {
             $unequal_size_current = "2GB"
         }
         $unequal_size += $unequal_size_current
     }
 } else {
-    $equal_size = Read-Host "`nEnter the size of the disks (Default: 2GB)"
+    $equal_size = Read-Host "Enter the size of the disks (Default: 2GB)"
     if (!$equal_size) {
         $equal_size = "2GB"
     }
-    Write-Host "> The $disks_total disks will all be of $equal_size."
+    Write-Host -ForegroundColor $verbose_color "> The $disks_total disks will all be of $equal_size."
 }
 
 # Prompt for path
@@ -126,11 +130,13 @@ if ($add_to_vm -like "Y*") {
 
 } else {
 
-    Read-Host "Press [ENTER] to select a folder to save the new disks to"
-    $disks_path = PickFolder
+    $disks_path = Read-Host "Press [ENTER] to select a folder or write a path to save the new disks to"
+    if(!$disks_path) {
+        $disks_path = PickFolder
+    }
 
 }
-Write-Host "> The disks will be created in $disks_path"
+Write-Host -NoNewline -ForegroundColor $verbose_color "> The disks will be created in $disks_path`n"
 
 # Prompt for initialization
 $init = Read-Host "`nDo you want to initialize these disks? (Default: Yes)"
@@ -145,7 +151,7 @@ for ($i=1; $i -le $disks_total; $i++) {
         New-VHD -Path $full_path -SizeBytes $equal_size
     }
     if ($?) {
-        Write-Host "> Successfully created $disks_basename-$i`n"
+        Write-Host -ForegroundColor $success_color "> Successfully created $disks_basename-$i`n"
     }
 
     # Initialize
@@ -154,7 +160,7 @@ for ($i=1; $i -le $disks_total; $i++) {
         $disk = Get-VHD -Path $full_path
         Initialize-Disk $disk.DiskNumber
         if ($?) {
-            Write-Host "> Successfully initialized $disks_basename-$i`n"
+            Write-Host -ForegroundColor $success_color "> Successfully initialized $disks_basename-$i`n"
         }
         Dismount-VHD -Path $full_path
     }
@@ -162,5 +168,6 @@ for ($i=1; $i -le $disks_total; $i++) {
     # Attach to virtual machine
     if ($vm_name) {
         Add-VMHardDiskDrive -VMName $vm_name -Path $full_path
+        Write-Host -ForegroundColor $success_color "> $disks_basename-$i was successfully attached to $vm_name`n"
     }
 }
